@@ -26,3 +26,28 @@ def addUser(username,password,avatarid):
     "level": 0 }
     new_user = player_ref.push(user)
     return new_user.key
+
+def updateMarks(username,level):
+    player_ref = db.reference('/')
+    all_players = player_ref.get()
+
+    if not all_players:
+        return None
+
+    for player_id, player_data in all_players.items():
+        if (player_data.get("username") == username):
+            player_ref.child(player_id).update({"level": player_data.get("level")+level})
+            return "Success"
+    return "Failed"
+
+def getLevel(username):
+    player_ref = db.reference('/')
+    all_players = player_ref.get()
+
+    if not all_players:
+        return None
+
+    for player_id, player_data in all_players.items():
+        if (player_data.get("username") == username):
+            return player_data.get("level")
+    return None

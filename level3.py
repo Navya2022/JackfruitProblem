@@ -1,5 +1,6 @@
 import pygame
 import random
+import outro
 
 TILE_SIZE = 40
 FPS = 60
@@ -10,6 +11,7 @@ BLACK = (0, 0, 0)
 GREEN = (100, 255, 100)
 BLUE = (100, 100, 255)
 BROWN = (137, 81, 41)
+WHITE = (255, 255, 255)
 
 # Maze layout
 MAZE_LAYOUT = [
@@ -50,9 +52,13 @@ class ShiftingMaze:
         self.win = False
         self.last_shift = pygame.time.get_ticks()
 
-        # Load vines
-        vine_img = pygame.image.load("vines.jpeg").convert_alpha()
-        self.vine_img = pygame.transform.scale(vine_img, (int(self.tile_w), int(self.tile_h)))
+        # Load vines with error handling
+        try:
+            vine_img = pygame.image.load("vines.jpeg").convert_alpha()
+            self.vine_img = pygame.transform.scale(vine_img, (int(self.tile_w), int(self.tile_h)))
+        except Exception as e:
+            print(f"Warning: Could not load vines.jpeg: {e}")
+            self.vine_img = None
 
     def find_start(self):
         for r in range(self.rows):
@@ -80,8 +86,8 @@ class ShiftingMaze:
         elif direction == "RIGHT":
             dx = 1
 
-        nx = self.player_pos[0] + dx
-        ny = self.player_pos[1] + dy
+        nx = int(self.player_pos[0] + dx)
+        ny = int(self.player_pos[1] + dy)
 
         if self.can_move(nx, ny):
             self.player_pos = [nx, ny]
@@ -111,7 +117,15 @@ class ShiftingMaze:
             self.last_shift = now
 
         # Check win
-        if self.maze[self.player_pos[1]][self.player_pos[0]] == "E":
+        px = int(self.player_pos[0])
+        py = int(self.player_pos[1])
+        if not (0 <= py < self.rows and 0 <= px < self.cols):
+            return False
+
+        current_tile = self.maze[py][px]
+        
+
+        if current_tile == "E":
             self.win = True
             return True
 
@@ -125,7 +139,10 @@ class ShiftingMaze:
                 y = self.y + r * self.tile_h
 
                 if tile == "1":
-                    surface.blit(self.vine_img, (x, y))
+                    if self.vine_img:
+                        surface.blit(self.vine_img, (x, y))
+                    else:
+                        pygame.draw.rect(surface, (100, 50, 0), (x, y, self.tile_w, self.tile_h))
                 elif tile == "E":
                     pygame.draw.rect(surface, GREEN, (x, y, self.tile_w, self.tile_h))
                 else:
@@ -135,47 +152,21 @@ class ShiftingMaze:
         px = self.x + self.player_pos[0] * self.tile_w
         py = self.y + self.player_pos[1] * self.tile_h
         pygame.draw.rect(surface, BLUE, (px + 5, py + 5, self.tile_w - 10, self.tile_h - 10))
+        if self.player_pos==[28,7]:
+            self.player_pos=[0,0]
+            outro.outro_screen( "back_out.jpeg")
+            
 
         # Win text overlay
         if self.win:
-            font = pygame.font.SysFont("arial", 40)
-            text = font.render("You Found the Cup!", True, (255, 255, 255))
-            rect = text.get_rect(center=(self.x + self.width / 2,
-                                         self.y + self.height / 2))
+            # Draw semi-transparent background
+            overlay = pygame.Surface((int(self.width), int(self.height)), flags=pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 150))
+            surface.blit(overlay, (int(self.x), int(self.y)))
+            
+            # Draw win text
+            font = pygame.font.SysFont("arial", 50, bold=True)
+            text = font.render("You Found the Cup!", True, (255, 215, 0))
+            rect = text.get_rect(center=(int(self.x + self.width / 2),
+                                         int(self.y + self.height / 2)))
             surface.blit(text, rect)
-
-
-
-def run_level3(screen, WIDTH, HEIGHT):
-    clock = pygame.time.Clock()
-    maze = ShiftingMaze(0, 0, WIDTH, HEIGHT)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    maze.move_player("UP")
-                elif event.key == pygame.K_DOWN:
-                    maze.move_player("DOWN")
-                elif event.key == pygame.K_LEFT:
-                    maze.move_player("LEFT")
-                elif event.key == pygame.K_RIGHT:
-                    maze.move_player("RIGHT")
-
-        win_flag = maze.update()
-
-        screen.fill(BLACK)
-        maze.draw(screen)
-        pygame.display.update()
-
-
-        if win_flag:
-            maze.draw(screen)
-            pygame.display.update()
-            pygame.time.wait(2000)
-            return   # <-- return to main.py
-
-        clock.tick(FPS)

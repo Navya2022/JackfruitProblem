@@ -6,7 +6,10 @@ from PyQt6.QtCore import Qt
 import sys
 from firebase import checkUser
 
+user = ""
+
 class LoginWindow(QWidget):
+    username = ""
     def __init__(self):
         super().__init__()
 
@@ -39,17 +42,22 @@ class LoginWindow(QWidget):
         self.setLayout(layout)
 
     def login(self):
+        global user
         username = self.user_input.text()
+        user = username
         password = self.pass_input.text()
         status = checkUser(username, password)
         if status == "Success":
+            import main
             QMessageBox.information(self, "Login Successful", "You have logged in successfully!")
+            self.close()
+            main.run()
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
+            
 
 
-
-def main():
+def mainl():
     app = QApplication(sys.argv)
     window = LoginWindow()
     window.show()
@@ -57,4 +65,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    mainl()

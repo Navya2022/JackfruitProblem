@@ -1,6 +1,7 @@
 import pygame
 import sys
-import math
+import firebase
+import login
 
 
 pygame.init()
@@ -301,6 +302,7 @@ def text(player, time_left, game_over, game_won):
         txt = BIG_FONT.render("You saved your friend!", True, WHITE)
         SCREEN.blit(txt, (WIDTH // 2 - txt.get_width() // 2,
                         HEIGHT // 2 - txt.get_height() // 2))
+        firebase.updateMarks(login.user, 50)
         pygame.display.update()
         pygame.time.wait(3000)
         over = True

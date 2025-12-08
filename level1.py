@@ -5,6 +5,8 @@ import os
 import sys
 import cv2
 import numpy as np
+import firebase
+import login
 
 PLAYER_SPEED = 6
 ANIMAL_COLLIDE_RADIUS = 40
@@ -191,6 +193,7 @@ class Level1:
             msg_surf = big_font.render(msg, True, color)
             score_surf = med_font.render(f"Score: {self.score}", True, (0, 0, 0))
             prompt = med_font.render("Press SPACE to continue", True, (70, 70, 70))
+            firebase.updateMarks(login.user, self.score)
 
             self.surface.blit(msg_surf, (self.w//2 - msg_surf.get_width()//2, self.h//2 - 120))
             self.surface.blit(score_surf, (self.w//2 - score_surf.get_width()//2, self.h//2 - 40))
